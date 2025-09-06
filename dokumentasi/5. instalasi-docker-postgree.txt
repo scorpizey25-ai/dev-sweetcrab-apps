@@ -34,10 +34,10 @@ Setelah Docker terinstal, kita akan membuat dan menjalankan kontainer PostgreSQL
 		sudo docker run --name dcon00-db-postgres -e POSTGRES_USER=ai-rootuser -e POSTGRES_PASSWORD=ai-rootpass -p 5432:5432 -d -v postgres-data:/var/lib/postgresql/data postgres
 
 3. Verifikasi Kontainer:
-	Periksa apakah kontainer sudah berjalan dengan benar.
+	1. Periksa apakah kontainer sudah berjalan dengan benar.
 
-	Terminal 	
-		sudo docker ps
+		Terminal 	
+			sudo docker ps
 
 4. Mengakses dan Menggunakan PostgreSQL
 	Sekarang, Anda bisa terhubung ke database PostgreSQL yang berjalan di dalam kontainer.
@@ -48,21 +48,53 @@ Setelah Docker terinstal, kita akan membuat dan menjalankan kontainer PostgreSQL
 		Bash :
 			sudo ufw allow 5432
 
-	2. Terhubung ke psql dari host:
+	2. Kemudian Cek apakah docker sudah mengekspose PORT 5432 ke host server
+		
+		Bash
+			ss -tlpn
+	
+	3. Kemudian Lakukan cek koneksi dari PC client ke server, menggunakan telnet
+		
+		Terminal
+			telnet 192.168.3.14 5432	
+		
+	4. Terhubung ke psql (terminal postqre sql) dari host:
 		Dari host Ubuntu Anda, gunakan psql untuk terhubung ke database. Jika psql belum terinstal, instal terlebih dahulu.
 
 		Bash :
 			sudo apt install postgresql-client -y
 
-	3. Kemudian, gunakan perintah berikut untuk terhubung, dengan menggunakan username dan password yang telah Anda tentukan.
+	5. Kemudian, gunakan perintah berikut untuk terhubung, dengan menggunakan username dan password yang telah Anda tentukan.
 
 		Bash :
 			psql -h localhost -U ai-rootuser -W -d postgres
 
-5. Manajemen Kontainer dan Volume
-Dengan menggunakan volume, Anda dapat mengelola kontainer dengan aman.
-    - Menghentikan Kontainer: sudo docker stop dcon00-db-postgres
-    - Menjalankan Kembali: sudo docker start dcon00-db-postgres
-    - Menghapus Kontainer: sudo docker rm dcon00-db-postgres
-    
+5. Manajemen Kontainer
+	Beberapa instruksi kontainer
+
+		- Menghentikan Kontainer	: sudo docker stop dcon00-db-postgres
+		- Menjalankan Kembali		: sudo docker start dcon00-db-postgres
+		- Menghapus Kontainer		: sudo docker rm dcon00-db-postgres
+		- Menghapus Kontainer Paksa	: docker rm -f dcon01-db-postgres
+
+
+6. Manajemen Volume ( Presistance
+	1. Analoginya volume seperti file sharing:
+		- sharedMedia (folder) = Docker Volume
+		- Pengaturan file sharing = Kontainer Docker
+		- IP file sharing = Port yang terekspos (-p)
+		- PC client = Aplikasi klien (seperti pgAdmin)
+
+		Ketika kamu menghapus pengaturan file sharing, folder sharedMedia (analoginya volume) tidak ikut terhapus. 
+		Data di dalamnya tetap aman. Demikian pula, saat kamu membuat pengaturan file sharing baru, 
+		data yang sudah ada dapat diakses kembali.
+
+	2. Mengelola Volume
+		Pelajari perintah-perintah dasar untuk mengelola volume:
+		- docker volume create <nama_volume>	: Membuat volume baru secara eksplisit.
+		- docker volume ls						: Melihat daftar semua volume yang ada.
+		- docker volume inspect <nama_volume>	: Melihat detail konfigurasi dan lokasi volume.
+		- docker volume rm <nama_volume>		: Menghapus volume.
+		- docker volume prune					: Menghapus semua volume yang tidak lagi digunakan oleh kontainer.
+		
 	*** Catatan Penting: Menghapus kontainer TIDAK akan menghapus data Anda karena data disimpan di volume.

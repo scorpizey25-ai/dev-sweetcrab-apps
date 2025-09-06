@@ -16,7 +16,11 @@ Postgres
 	username 	: ai-rootuser
 	password	: ai-rootpass
 	image name	: postgres
-	container 	: dcon00-db-postgres
+	
+	docker postgres		
+		images		: postgres
+		container 	: dcon00-db-postgres
+		volumes		: postgres-data
 	
 Github
 	username : scorpizey25-ai

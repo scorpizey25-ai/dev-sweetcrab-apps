@@ -1,0 +1,22 @@
+==================	ANALOGI DOCKER NETWORK & DOCKER COMPOSE	==================
+Inti dari docker network dan docker compose adalah terletak infrastrukstur vs fungsionalitas.
+Analogi pada "VirtualMachine"
+	1. Docker Network
+		Lebih condong ke arah infrastruktur, bagaimana antar container saling terkoneksi.
+		analogi : Bagaimana antara VM1, VM2, VM3 dalam 1 host bisa sling terkoneksi,
+				  misalkan ping / telnet antar VM
+		
+	2. Docker Compose
+		Lebih condong ke arah fungsionalitas / orkestrasi setiap VM.
+		analogi : Dimana fungsi VM1 ( webserver ) & VM2 ( database server ), kedua VM tersebut
+				  tidak akan berfungsi jika tidak saling terkoneksi.
+				  
+		nb : Bukan berarti wajib menggunakan docker network dulu, ( seperti cara tradisonal model VM )
+			 sebelum docker compose dibuat. Karena docker compose sudah mengintegrasi
+			 komunikasi antar container kedalam 1 file YAML, sehingga infrastruktur + fungsionalitas
+			 sudah menjadi satu.
+
+Untuk automasi, maka anda bisa melompati docker network, karena docker compose mampu melakukan otomasi
+tanpa kita tau cara kerja dari docker network.
+
+==================	DOCKER COMPOSE	==================
