@@ -19,4 +19,50 @@ Analogi pada "VirtualMachine"
 Untuk automasi, maka anda bisa melompati docker network, karena docker compose mampu melakukan otomasi
 tanpa kita tau cara kerja dari docker network.
 
+NB : Docker compose adalah fundamental yang wajib dikuasi, karena Docker Compose menangani skala kecil,
+	 maksudnya konektifitas + infrastruktur antar lintas container dalam 1 host server (lokal),
+	 sebelum melangkah lebih jauh ke Orkestrasi Kubernetes dalam skala besar,
+	 dimana antar lintas containar dalam banyak host server ( cluster )
+
 ==================	DOCKER COMPOSE	==================
+Sebelumnya anda menggunakan "sudo docker run..." untuk menjalankan container,
+dengan docker compose, anda cukup menjalankan file YAML yang sudah diresepkan,
+jadi kesimpulannya anda migrasi dari "docker run" ke "docker compose"
+
+
+	Bash
+		sudo docker compose up -d
+	
+Intinya, docker compose itu adalah resep, dimana memiliki 3 pilar penting, 
+yaitu network, service, & volumes untuk aplikasi multi containar.
+
+1. Install docker compose		
+
+	Bash
+		sudo apt-get update
+		sudo apt-get install docker-compose-plugin
+	
+2. 	Buat file yaml (yml) dengan nama "docker-compose.yml"
+	step pertama untuk menjalankan container postgres
+	
+	Bash yaml
+
+		services:
+		  db:
+			image: postgres
+			container_name: dcon01-db-postgres
+			environment:
+			  POSTGRES_USER: ai-rootuser
+			  POSTGRES_PASSWORD: ai-rootpass
+			ports:
+			  - "5432:5432"
+			volumes:
+			  - postgres-data:/var/lib/postgresql/data
+			  
+3. Jalankan docker-compose.yml
+
+	Bash
+		sudo docker compose up -d
+
+	*** kemudian verifikasi container jalan : 
+		sudo docker ps -a
