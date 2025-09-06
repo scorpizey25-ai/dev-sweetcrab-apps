@@ -1,0 +1,179 @@
+SECURITY TINGKAT LANJUT
+
+	1. Pengamanan SSH dengan Fail2ban
+
+		a. install fail2ban
+		
+			Bash
+			
+				sudo apt update
+				sudo apt install fail2ban -y
+				
+		b. Buat salinan file konfigurasi utama:
+		
+			Bash
+			
+				sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+				
+		c. Buka file jail.local, dan cari baris [sshd] 
+			
+			- hilangkan tanda # enable = true
+			- tambahkan port = 2200
+		
+			Bash
+			
+				[sshd]
+				enabled = true
+				port = 2200
+		
+		d. Restart fail2ban
+		
+			Bash
+			
+				sudo systemctl restart fail2ban	
+			
+	2. Konfigurasi SSH
+		
+		Sebelumnya kita sudah membuat user developer dengan username : ai-dev01
+		dan sekarang tinggal konfigurasi SSH dengan konsep public key dan private key
+		jadi developer tidak boleh mengetahui password server.
+		
+		2.1 Di komputer developer, buka PowerShell.
+
+			a. Jalankan perintah untuk membuat kunci.
+			
+				PowerShell
+
+					ssh-keygen -t ed25519 -C "developer 001"
+			
+			b. Peringatan akan muncul, tekan Enter untuk menyimpan kunci di lokasi default (C:\Users\Scorpizey\.ssh\).
+			
+			c. Kemudian isikan passpharase : kuncissh-dev001
+
+			d. Hasilnya:
+				Kunci Privat: C:\Users\Scorpizey\.ssh\id_ed25519 (Jaga kerahasiaannya!).
+				Kunci Publik: C:\Users\Scorpizey\.ssh\id_ed25519.pub (Ini yang akan disalin ke server).		
+					dengan membuka file tersebut misalkan menggunakan notepad
+					
+			
+		2.2 Mendaftarkan Kunci ke Server Ubuntu 	
+
+			a. Pastikan Anda login ke server Ubuntu sebagai pengguna dengan hak sudo.
+
+			b. Jalankan perintah berikut untuk membuat direktori .ssh dan file authorized_keys dengan izin yang benar:
+
+					Bash
+
+						sudo mkdir -p /home/ai-dev01/.ssh
+						sudo touch /home/ai-dev01/.ssh/authorized_keys
+						sudo chmod 700 /home/ai-dev01/.ssh
+						sudo chmod 600 /home/ai-dev01/.ssh/authorized_keys
+				
+			c. Sekarang, tambahkan kunci publik ke file. Cara paling aman adalah menggunakan nano dengan sudo.
+
+					Bash
+
+						sudo nano /home/ai-dev01/.ssh/authorized_keys
+				
+			d. Tempelkan seluruh baris kunci publik. Simpan dan keluar dari editor ( CTRL + O dan CTRL + X )		
+			
+		
+		2.3. Mengatur Izin Pengguna
+		
+			a. Setelah Anda menempelkan kunci publik untuk memastikan izin sudah benar.
+
+				Bash
+
+					sudo chmod 700 /home/ai-dev01/.ssh
+					sudo chmod 600 /home/ai-dev01/.ssh/authorized_keys
+					sudo chown -R ai-dev01:ai-dev01 /home/ai-dev01/.ssh
+		
+		2.4 Pengujian SSH di client
+			
+				a. Uji koneksi dengan ssh ai-dev01@alamat_ip_server.
+				
+				b. Untuk pertama kali anda, diminta persetujuan fingerprint, maka tekan yes
+				
+				c. untuk selanjutnya, anda hanya cukup memasukkan keypharase : kuncissh-dev001 ( bukan password ubuntu )
+				
+				d. jika anda tidak ingin terus-terusan memasukkan keypharase, maka gunakan SSH Agent
+					
+					PowerShell
+					
+						Start-Service ssh-agent
+						ssh-add C:\Users\scorpiyze\.ssh\id_ed25519					
+						
+				e. Jika SSH agent tidak bisa digunakan, pastikan di service SSH agent tidak disable
+				
+	3. Ubah Port SSH
+	
+		Demi keamanan, karena port 22 itu adalah default ssh, maka ubah port tersebut :
+		
+		a. Buka file konfigurasi SSH: 
+		
+			terminal 
+				sudo nano /etc/ssh/sshd_config.
+
+		b. Cari baris #Port 22.
+
+		c. Haous tanda # dan ganti menjadi Port 2200.
+
+		d. Simpan file (Ctrl + O, Enter).
+
+		e. Keluar dari nano (Ctrl + X).
+
+		f. Restart layanan SSH: 
+			
+			terminal 
+				sudo systemctl restart ssh
+		
+		g. Pastikan port 2200 telah listen
+			terminal
+				sudo netstat -tulpn
+		
+		h. Jika langkah restart ssh gagal, maka reload daemon
+		
+			terminal 
+				sudo systemctl daemon-reload
+				sudo systemctl restart ssh
+		
+		i. Jika masih meminta kata sandi di sisi client, maka
+			a. hapus rule port 22 di ufw
+			
+			b. tambahkan port 2200 ke ufw
+			
+				
+			terminal
+				sudo ufw delete allow 22	
+				sudo ufw allow 2200
+		
+		j. Sekarang client harus menambahkan -p 2200
+			
+			PowerShell
+				ssh -p 2200 ai-dev01@172.12.115.180
+				
+				
+	9. Pengujian Keamanan :
+		
+		1. Pada terminal client Powershell Coba login dengan root => 
+		
+			Poweshell
+				ssh -p 2200 root@172.12.115.180
+		
+		2. Jika bisa masuk, maka ini adalah celah keamanan parah
+		
+		3. Pada root atau pengguna memiliki akses sudo, ketikkan
+		
+			Terminal Bash 
+				sudo ls -l /root/.ssh/
+			
+		4. Jika nilainya lebih dari 0, atau authorized_key, maka hapus
+		
+			Terminal Bash 
+				sudo rm /root/.ssh/authorized_keys
+
+		5. Kemudian akses ssh kembali pada Powershell client
+		   Jika permision denied ( publickey, password ), maka server aman
+		   
+			PowerShell
+				ssh -p 2200 root@172.12.115.180

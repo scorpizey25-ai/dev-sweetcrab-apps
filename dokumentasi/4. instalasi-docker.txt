@@ -1,0 +1,156 @@
+============================ INSTALL & KONFIGURASI DOCKER =================================
+
+Konsep Docker yang Wajib Anda Kuasai
+
+	1. Image dan Container:
+		Anda harus benar-benar mengerti perbedaan antara cetak biru (image) dan instans 
+		hidupnya (container).
+
+	2. Dockerfile: 
+		Memahami cara menulis Dockerfile adalah kunci. Anda perlu tahu bagaimana mengemas 
+		aplikasi Anda, dependensinya, dan lingkungannya ke dalam sebuah image.
+
+	4. Volume dan Persistent Storage: Kubernetes mengandalkan volume untuk mengelola data 
+		yang persisten. Jika Anda tidak memahami volume, Anda tidak akan bisa mengelola 
+		database di Kubernetes.
+
+	5. Image Registry: Anda harus tahu bagaimana cara mengirim dan menarik image dari 
+		registri seperti Docker Hub. Kubernetes akan menarik image dari registri yang sama.
+
+===========================================================================================
+
+Ini cara install & konfigurasi dengan menambahkan repositori resmi, dimana cara ini
+lebih aman & update daripada menggunakan versi install ari ubuntu resminya
+
+1. Perbarui sistem:
+	Jalankan perintah berikut untuk memastikan semua paket sistem Anda up-to-date.
+   
+	terminal
+		sudo apt update && sudo apt upgrade -y
+	
+2. Instal paket prasyarat:
+	Instal paket yang diperlukan untuk mengizinkan apt menggunakan repositori melalui HTTPS.
+   
+	terminal
+		sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release -y
+
+3. Tambahkan GPG key resmi Docker:
+	Tambahkan GPG key resmi Docker untuk memastikan paket yang Anda unduh otentik.
+	
+	terminal
+		curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+	
+4. Siapkan repositori stabil Docker:
+	Tambahkan repositori Docker ke apt sources Anda.	
+	
+	terminal
+		echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+		
+5. Instal Docker Engine:
+	Perbarui daftar paket dan instal Docker Engine, containerd, dan docker-compose.
+	
+	terminal
+		sudo apt update
+		sudo apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin -y
+		
+6. Verifikasi instalasi:
+	Periksa apakah Docker sudah terinstal dengan benar dengan menjalankan hello-world image.		
+	
+	terminal
+		sudo docker run hello-world
+		
+7. Perintah sederhana
+	- Melihat image
+	- Menghapus image
+	- Menghapus semua image
+	
+	- Melihat container apa saja yang tersedia
+	- Menghapus container
+	- Menghapus semua container yang berhenti
+	
+	terminal
+		docker images
+		docker rmi [nama_images]
+		docker image prune
+		
+		sudo docker ps -a
+		docker rmi container
+		docker container prune
+		
+8. Flow docker
+	Konsep dasar docker adalah
+	Analogi :
+		- Dockerfile	=> Build Image	=> run Container
+						
+						sama dengan	
+		
+		- Resep Roti Bolu => Roti Bolu Matang => Menyajikan Roti Bolu kedalam wadah
+
+	A. Image
+	   Image dibagi menjadi 2, image build dan image pull
+	   
+	   A1. Image Build
+		   Sebuah image yang dibentuk dari resep (intruksi / perintah) dari Dockerfile
+		   Proses membuat image di mesin lokal Anda.
+	   
+			terminal
+				docker build -t images_build .	   
+				
+		***( build ) + (-t) + (nama_images) + (.)
+			 - membuat blueprint image dengan memberi tagname image bernama [images_build]
+			 - terdapat (.) yang digunakan untuk mencari dockerFile 
+			   (karena image butuh resep dari DockerFile)				
+		
+		A2. Image Pull
+			Sebuah image yang dibentuk dari resep (intruksi / perintah) dari Repository
+			Proses mengunduh image yang sudah dibuat orang lain dari 
+			repositori online ke mesin lokal Anda.
+		
+			terminal
+				sudo docker pull postgres
+			
+	B. Container
+		Menyajikan hasil sesuai blueprint dari images
+		Untuk menjalankan, opsi -d akan menjalankan di latar belakang, sedangkan
+		-p adalah port, jika -d tidak diberikan maka akan memblock terminal.	
+		
+			pseucode =>	sudo docker run -d -p 8080:80 --name [nama container] [nama image]
+		
+		*** (-p) : port atau (-d) : proses akan berjalan dibelakang background
+		
+			terminal
+				sudo docker run -d -p 8080:80 --name container_build images_build		
+		
+		NB : Bedakan antaran docker run dan docker start
+			 - docker run => lebih ke proses create dan start
+				 pseucode : sudo docker run -d -p 8080:80 --name [nama container] [nama image]
+				 
+			 - docker start => lebih ke proses start container yang sudah dibuild sebelumya
+				 pseucode : sudo docker start [nama container]
+				 
+	C. Volume Presistance
+		Case :
+			Jika container dihapus, maka perubahan data akan hilang dalam container,
+		
+		solusi :
+			Solusi menggunakan Volume juga tepat. Volume memang berfungsi sebagai penyimpanan terpisah 
+			dari container untuk menjaga data dinamis agar tetap ada (persistent). Data database, file log, 
+			dan file yang diunggah pengguna adalah contoh kasus yang sangat cocok untuk volume.
+			
+9. DockerFile ( Hanya digunakan untuk build/create image )
+Perintah Penting dalam Dockerfile, ini adalah otak / resep :
+
+	1. FROM: Ini adalah perintah pertama dan paling penting. Ia menentukan base image yang akan Anda gunakan. 
+		Misalnya, FROM python:3.9-slim akan memulai Image Anda dari versi minimalis Python.
+
+	2. COPY: Perintah ini menyalin file dari komputer Anda (lokasi di mana Anda menjalankan docker build) ke dalam Image. 
+		Misalnya, COPY ./app /app akan menyalin folder app ke dalam Image.
+
+	3. RUN: Perintah ini menjalankan sebuah perintah di dalam Image saat proses build. 
+		Misalnya, RUN pip install -r requirements.txt akan menginstal semua dependency Python Anda.
+
+	4. EXPOSE: Ini memberitahu Docker bahwa container akan mendengarkan di port tertentu saat dijalankan. 
+		Misalnya, EXPOSE 8080 akan menunjukkan bahwa aplikasi Anda berjalan di port 8080.
+
+	5. CMD: Ini menentukan perintah yang akan dijalankan saat container dimulai. 
+		Misalnya, CMD ["python", "app.py"] akan menjalankan skrip app.py saat container dihidupkan.			

@@ -1,0 +1,68 @@
+==================	Menjalankan Kontainer PostgreSQL	==================
+
+Setelah Docker terinstal, kita akan membuat dan menjalankan kontainer PostgreSQL dengan konfigurasi yang tepat sejak awal, termasuk manajemen volume.
+
+1. Buat Volume untuk Data:
+	Langkah pertama dan terpenting adalah membuat volume Docker untuk menyimpan data database secara persisten.
+
+	Bash :
+		sudo docker volume create postgres-data
+
+2. Jalankan Kontainer PostgreSQL:
+	Gunakan perintah docker run dengan parameter yang sesuai. Perintah ini akan:
+
+	 -  Mengunduh image postgres (jika belum ada).
+
+		Terminal 
+			sudo docker pull postgres
+
+	 - 	--name dcon00-db-postgres							: Membuat kontainer dengan nama
+
+	 - 	-e POSTGRES_USER=ai-rootuser 						: Menetapkan username 
+	 
+	 -	-e POSTGRES_PASSWORD=ai-rootpass					: Menetapkan password
+
+	 - 	-p 5432:5432										: Memetakan port host ke kontainer
+
+	 - 	-d													: Menjalankan kontainer di latar belakang.
+	 
+	 - 	-v postgres-data:/var/lib/postgresql/data postgres 	: Memasang volume postgres-data ke direktori data standar PostgreSQL.
+	 
+	 -  postgres 											: image docker ( ini tidak bisa diganti, karena sudah default repository )
+
+	Bash :
+		sudo docker run --name dcon00-db-postgres -e POSTGRES_USER=ai-rootuser -e POSTGRES_PASSWORD=ai-rootpass -p 5432:5432 -d -v postgres-data:/var/lib/postgresql/data postgres
+
+3. Verifikasi Kontainer:
+	Periksa apakah kontainer sudah berjalan dengan benar.
+
+	Terminal 	
+		sudo docker ps
+
+4. Mengakses dan Menggunakan PostgreSQL
+	Sekarang, Anda bisa terhubung ke database PostgreSQL yang berjalan di dalam kontainer.
+
+	1. Konfigurasi Firewall:
+		Pastikan untuk menambahkan rule firewall untuk port PostgreSQL agar koneksi eksternal dapat masuk.
+
+		Bash :
+			sudo ufw allow 5432
+
+	2. Terhubung ke psql dari host:
+		Dari host Ubuntu Anda, gunakan psql untuk terhubung ke database. Jika psql belum terinstal, instal terlebih dahulu.
+
+		Bash :
+			sudo apt install postgresql-client -y
+
+	3. Kemudian, gunakan perintah berikut untuk terhubung, dengan menggunakan username dan password yang telah Anda tentukan.
+
+		Bash :
+			psql -h localhost -U ai-rootuser -W -d postgres
+
+5. Manajemen Kontainer dan Volume
+Dengan menggunakan volume, Anda dapat mengelola kontainer dengan aman.
+    - Menghentikan Kontainer: sudo docker stop dcon00-db-postgres
+    - Menjalankan Kembali: sudo docker start dcon00-db-postgres
+    - Menghapus Kontainer: sudo docker rm dcon00-db-postgres
+    
+	*** Catatan Penting: Menghapus kontainer TIDAK akan menghapus data Anda karena data disimpan di volume.

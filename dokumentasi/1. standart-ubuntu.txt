@@ -1,0 +1,138 @@
+STANDARISASI KONFIGURASI UBUNTU
+
+	1. Lakukan update & upgrade ubuntu
+	
+		terminal
+			sudo apt-get update && upgrade
+			
+	2. Cek version ubuntu
+	
+		terminal
+			lsb_release -a
+			
+	3. Konfigurasi Waktu dan chrony ⏰
+	
+		a. Install chrony
+			
+			terminal
+				sudo apt install chrony -y
+
+		b. Instal dan aktifkan chrony
+			
+			terminal
+				
+				sudo systemctl enable chrony
+				sudo systemctl start chrony			
+				sudo systemctl status chrony
+	
+	4. Configurasi IP statis
+	
+		a.Buka yaml
+		
+			bash terimal			
+				sudo nano /etc/netplan/01-netcfg.yaml
+		
+		b. Ubah perijinan ke root
+		
+			bash terminal
+				sudo chmod 600 /etc/netplan/01-netcfg.yaml
+				
+		c. Ubah konfigurasi DHCP menjadi statis. Tambahkan baris-baris berikut :
+		
+			bash terimal			
+				network:
+				  version: 2
+				  ethernets:
+					enp0s3: # Nama antarmuka jaringan Anda
+					  addresses: [192.168.1.10/24]
+					  routes:
+						- to: default
+						  via: 192.168.1.1
+					  nameservers:
+						addresses: [8.8.8.8, 8.8.4.4]
+		
+		d. Terapkan perubahan dengan perintah netplan apply.	
+		
+			bash terminal
+				sudo netplan apply
+				
+	5. Konfigurasi monitoring dasar 
+	
+		a. htop
+			Alat ini memberikan tampilan real-time yang mudah dibaca tentang penggunaan CPU, RAM, dan daftar proses yang sedang berjalan.
+			
+		b. net-tools
+			Paket ini berisi berbagai utilitas jaringan, termasuk netstat, yang berguna untuk memantau koneksi jaringan server.			
+			
+		c. iotop
+			Khusus memantau penggunaan I/O (Input/Output) disk. Ini sangat berguna jika Anda mencurigai ada proses yang terlalu banyak 
+			membaca atau menulis ke disk, yang bisa memperlambat performa server.
+	
+			terminal 	
+			
+				sudo apt update
+				sudo apt install htop
+				sudo apt install net-tools
+				sudo apt install iotop
+
+			Penggunaan :
+				htop
+				sudo iotop
+
+	6. Install UFW ( Firewall )
+		- install paket ufw
+		- ijikan port 22 untuk ssh
+		- cek status ufw
+		- aktifkan ufw
+		
+		terminal 
+			sudo apt update
+			sudo apt install ufw
+			sudo ufw allow 22
+			sudo ufw status
+			sudo ufw enable
+			
+	7. Konfigurasi Hak Akses
+	
+		7.1. Lingkup akses users terdiri dari :
+				a. Root 
+					- Menginstal, menghapus, dan mengkonfigurasi perangkat lunak sistem.
+					- Mengubah file konfigurasi inti sistem (misalnya, di direktori /etc/).
+					- Membuat, mengubah, atau menghapus pengguna lain dan mengatur izin mereka.
+					- Mematikan atau me-reboot server.
+					- Mengakses atau mengubah semua file tanpa batasan, termasuk file pengguna lain.
+					
+				b. non-root
+					- Mengakses dan mengubah file hanya di direktori home mereka sendiri (/home/nama_pengguna).
+					- Menjalankan program dan aplikasi yang telah diinstal.
+					- Melihat sebagian besar file dan direktori sistem, tetapi tidak dapat mengubahnya.
+					- Tidak dapat menginstal program baru atau mengubah konfigurasi sistem tanpa izin.
+				
+		7.2. Cek akses user : whoami ( jika 0 maka root, jika 1000 non-root )
+		
+		7.3. sudo -i untuk masuk ke root dalam menambahkan user
+		
+		7.4 Buat User Developer di Server Ubuntu menggunakan mode root
+	 
+			 Bash
+				sudo adduser ai-dev01
+				
+			 Kemudian masukkan password => ai-passdev01
+			 
+
+	8. Konfigurasi SSH server & Client
+	
+			Bash
+				sudo install open-ssh-server
+				sudo install open-ssh-client
+				
+Info remote SSH :
+
+	remote SSH -p [ remote ] => user | port
+		ssh -p 2200 ai-dev01@172.17.115.180
+
+	remote SSH -p -v [ remote ] => user | port | debug
+		ssh -v -p 2200 ai-dev01@172.17.115.180
+
+	remote SSH -p [ remote ] => root | port
+		ssh -p 2200 root@172.17.115.180

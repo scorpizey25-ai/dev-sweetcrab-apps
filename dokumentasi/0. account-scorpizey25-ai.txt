@@ -1,0 +1,24 @@
+Gmail
+	username : ai.scorpizey25@gmail.com
+	password : B*******4*****10
+	
+Ubuntu
+	username : scorpizey25-ai
+	password : T@nggalMain-2509
+
+user developer 
+	username 	: ai-dev01
+	password 	: ai-passdev01	
+	ketpharase	: kuncissh-dev001
+	ssh address : ssh ai-dev01@172.17.115.180
+	
+Postgres
+	username 	: ai-rootuser
+	password	: ai-rootpass
+	image name	: postgres
+	container 	: dcon00-db-postgres
+	
+Github
+	username : scorpizey25-ai
+	repository
+		- dev-sweetcrab-apps
