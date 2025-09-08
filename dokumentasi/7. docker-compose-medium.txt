@@ -1,3 +1,113 @@
 =====================================================================================
-=========================	DOCKER COMPOSE VS DOCKER MANUAL	=========================
+===============================	DOCKER COMPOSE MEDIUM	=============================
 =====================================================================================
+
+Untuk level medium docker compose, akan didetailkan menjadi 4 bagian 
+[ Volumes, Network, Restart Policy, Environment File ]
+
+ 1. VOLUMES
+	1.1 Volumes digunakan untuk menyimpan data secara persisten, memastikan data tidak hilang saat kontainer dihentikan atau dihapus. 
+		Ada dua jenis utama:
+	
+		a. Bind Mounts
+			- Menghubungkan folder dari [host] ke [container] secara manual oleh users
+			- Perubahan didalam host akan terlihat di dalam constainer
+			
+				YAML
+
+				services:
+				  webserver:
+					volumes:
+					  - ./app:/usr/src/app # Menghubungkan folder 'app' lokal ke dalam kontainer
+		  
+		b. Named Volumes
+			- Menghubungkan folder dari [host] ke [container] secara otomatis oleh docker		
+			- Memberikan nama kepada volume
+			
+				YAML
+
+				services:
+				  database:
+					volumes:
+					  - db_data:/var/lib/postgresql/data # Menggunakan named volume 'db_data'
+
+				volumes:
+				  db_data: # Definisi named volume		  
+				  
+	1.2 Jadi perbedaan antara Bind Mounts dan Named Volumes, terletak pada "CUSTOM PATH", maksudnya	
+		 A. Siapa yang menentukan path volume di host ?
+				- Bind Mounts 		: Anda sendiri (manual)
+				- Named Volumes 	: Docker, sebagai gantinya, anda harus memberikan nama volume, misal db_data		
+				
+		 B. Cocok digunakan untuk menyimpan apa ?
+				- Bind Mounts 		: Source program yang diubah-ubah langsung, misalkan file php di "htdocs"
+				- Named Volumes 	: Data senstif dan tidak diubah2 secara langsung, misalkan database	 
+	
+	
+ 2. NETWORK				
+	2.1 Konsep Network DOCKER COMPOSE
+		 
+		 - Secara default, docker compose akan otomatis membuat konektifitas antar container, selama dalam 1 file YAML.
+		 - Misalkan ada 3 layanan ( frontend, backend, database )
+		 - Kemudian kita tetapkan rule, frontend => backend => database, frontend tidak boleh terhubung ke database
+		 - Maka gunakan network untuk mengisolir antara frontend dan database
+	
+	2.2 Pengunaan :
+	
+			YAML
+
+			services:
+			  app:
+				networks:
+				  - frontend
+
+			  db:
+				networks:
+				  - backend
+
+			networks:
+			  frontend: # Definisi jaringan frontend
+			  backend: # Definisi jaringan backend		
+		
+		*** Ada 2 layanan "app" dan "db"
+			1. Layanan app ditempatkan bersama jaringan bernama frontend.
+			2. Layanan db ditempatkan bersama jaringan bernama backend.
+			3. Dengan konfigurasi ini, kedua layanan (app dan db) tidak dapat saling berkomunikasi secara langsung 
+			   karena berada di jaringan yang berbeda dan terisolasi. Ini adalah praktik terbaik 
+			   untuk mengisolasi layanan dan meningkatkan keamanan.
+			   
+ 3. RESTART POLICY
+	Restart policy memastikan kontainer akan kembali berjalan secara otomatis jika ia berhenti, baik karena crash atau alasan lain. 
+	Ini sangat penting untuk menjaga aplikasi tetap online.
+	 
+		- no			 : Jangan pernah me-restart (default).
+		- always		 : Selalu me-restart, bahkan jika pengguna menghentikannya.
+		- on-failure	 : Me-restart hanya jika kontainer berhenti dengan kode kesalahan.
+		- unless-stopped : Me-restart kecuali jika dihentikan secara manual oleh pengguna.
+
+			YAML
+		
+			services:
+			  webserver:
+				restart: unless-stopped		
+
+ 4. ENVIROMENT FILE (.env)
+	Untuk menjaga kerahasiaan data sensitif (seperti kata sandi database) dan memisahkan konfigurasi dari kode, Anda bisa menggunakan file .env.				
+	
+	Di file .env, Anda mendefinisikan variabel:	
+		DB_USER=user
+		DB_PASSWORD=password123	
+	
+	Kemudian, di file docker-compose.yml, Anda cukup mereferensikan variabel tersebut:
+		services:
+		  database:
+			environment:
+			  POSTGRES_USER: ${DB_USER}
+			  POSTGRES_PASSWORD: ${DB_PASSWORD}		
+			  
+			  
+ ==============================================================================================
+ ========================== KONFIGURASI DOCKER COMPOSE MULTI-FILE =============================
+ ==============================================================================================
+ 
+ Ini adalah bagian inti / core profesional yang wajib dipelajari.

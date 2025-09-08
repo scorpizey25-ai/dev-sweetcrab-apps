@@ -1,0 +1,8 @@
+ 1. Orkestrasi Skala Besar: Materi lanjutan akan membahas cara mengelola ratusan bahkan ribuan kontainer di berbagai host, 
+	menggunakan teknologi seperti Docker Swarm atau Kubernetes.
+
+ 2. Keamanan Kontainer: Ini mencakup praktik keamanan yang lebih dalam, seperti pemindaian kerentanan (vulnerability scanning), 
+	manajemen rahasia (secrets management) dengan Vault atau sejenisnya, dan pengerasan (hardening) Docker daemon.
+
+ 3. CI/CD (Continuous Integration/Continuous Deployment): Di level lanjutan, Anda akan belajar mengotomatiskan seluruh alur kerja 
+	dari kode hingga ke kontainer yang berjalan di produksi menggunakan tools seperti Jenkins, GitLab CI, atau GitHub Actions.
