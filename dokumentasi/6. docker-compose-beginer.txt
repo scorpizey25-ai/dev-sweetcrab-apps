@@ -140,3 +140,46 @@ Contoh kita memiliki layanan webserver, database, dan cache, dimana perbedaan me
 ======================================================================================================
 ============================================	IMAGES CUSTOM	======================================
 ======================================================================================================		
+Singkatnya :
+	- Image custom adalah anda membuat image sendiri tanpa unduh dari repo gihub 
+	- Image custom biasanya dibuat didalam file Dockerfile 
+	- File YAML akan memanggil lokasi file Dockerfile
+	
+Jika menggunakan
+	- image dari repo/dockerhub/registry lain gunakan kunci => "image"
+	- image custom gunakan kunci => "build"
+	
+Contoh penggunaannya :
+	1. File Dockerfile ditempatkan dalam 1 directory file YAML ( tanda titik )
+	
+		YAML
+
+		services:
+		  my-app:
+			build: . 
+	
+	2. File Dockerfile ditempatkan dalam directory webserver
+	
+		YAML
+
+		services:
+		  my-app:
+			build: ./webserver
+			
+	3. Untuk menggunakan Dockerfile yang mau di custom nama atau lokasi, Anda perlu memberi tahu 
+	   Docker Compose dua hal utama, yaitu : lokasi dan nama file tersebut.
+
+		1. context: Ini adalah direktori tempat Docker harus mencari file-file yang diperlukan untuk proses build. 
+			Contoh : context: ./app 
+		   memberitahu Docker untuk masuk ke dalam folder app Anda.
+		
+		2. dockerfile: Secara default, Docker akan mencari file bernama Dockerfile. 
+			Jika Anda memberi nama berbeda (seperti Dockerfile.dev), Anda harus menunjuknya di sini.
+
+		services:
+		  my-app:
+			build:
+			  context: ./app
+			  dockerfile: Dockerfile.dev
+			  
+		Dalam contoh YAML Anda, Docker Compose akan pergi ke direktori ./app dan menggunakan file Dockerfile.dev untuk membuat image aplikasi Anda.
