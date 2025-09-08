@@ -1,68 +1,142 @@
-==================	ANALOGI DOCKER NETWORK & DOCKER COMPOSE	==================
-Inti dari docker network dan docker compose adalah terletak infrastrukstur vs fungsionalitas.
-Analogi pada "VirtualMachine"
-	1. Docker Network
-		Lebih condong ke arah infrastruktur, bagaimana antar container saling terkoneksi.
-		analogi : Bagaimana antara VM1, VM2, VM3 dalam 1 host bisa sling terkoneksi,
-				  misalkan ping / telnet antar VM
+=====================================================================================
+=========================	DOCKER COMPOSE VS DOCKER MANUAL	=========================
+=====================================================================================
+
+Docker compose merupakan orkestrasi skala kecil (1 host server) yang terdiri dari se-kumpulan layanan
+yang diintegrasikan (disatukan) dalam 1 file configurasi ( yaml ). dimana 1 container berisi 1 layanan.
+
+Contoh kita memiliki layanan webserver, database, dan cache, dimana perbedaan menggunaan docker biasa & compose :
+
+	metode manual :
+		1. Secara manual, untuk menjalan docker versi manual :
+				
+				docker run -d --name [nama container] [nama images]
 		
-	2. Docker Compose
-		Lebih condong ke arah fungsionalitas / orkestrasi setiap VM.
-		analogi : Dimana fungsi VM1 ( webserver ) & VM2 ( database server ), kedua VM tersebut
-				  tidak akan berfungsi jika tidak saling terkoneksi.
-				  
-		nb : Bukan berarti wajib menggunakan docker network dulu, ( seperti cara tradisonal model VM )
-			 sebelum docker compose dibuat. Karena docker compose sudah mengintegrasi
-			 komunikasi antar container kedalam 1 file YAML, sehingga infrastruktur + fungsionalitas
-			 sudah menjadi satu.
-
-Untuk automasi, maka anda bisa melompati docker network, karena docker compose mampu melakukan otomasi
-tanpa kita tau cara kerja dari docker network.
-
-NB : Docker compose adalah fundamental yang wajib dikuasi, karena Docker Compose menangani skala kecil,
-	 maksudnya konektifitas + infrastruktur antar lintas container dalam 1 host server (lokal),
-	 sebelum melangkah lebih jauh ke Orkestrasi Kubernetes dalam skala besar,
-	 dimana antar lintas containar dalam banyak host server ( cluster )
-
-==================	DOCKER COMPOSE	==================
-Sebelumnya anda menggunakan "sudo docker run..." untuk menjalankan container,
-dengan docker compose, anda cukup menjalankan file YAML yang sudah diresepkan,
-jadi kesimpulannya anda migrasi dari "docker run" ke "docker compose"
-
-
-	Bash
-		sudo docker compose up -d
+		    Jika kita memiliki 1 atau 2 container itu tidak masalah,
+		    Masalahnya jika kita punya 100 container, apakah harus menjalankan docker run... satu-persatu ?
+		    itu sangat tidak efisien, maka solusinya menggunakan orkestrasi / docker compose.
 	
-Intinya, docker compose itu adalah resep, dimana memiliki 3 pilar penting, 
-yaitu network, service, & volumes untuk aplikasi multi containar.
+		3. Docker Network
+			Belum lagi masalah konektifitas networking antar container jika menggunakan metode manual.
+			misalkan bagaimana mengatur config database webserver dengan database.
+		
+	metode compose :
+		1. Docker compose singkatnya sebagai orkestrasi yang mengatur keseluruhan container dalam skala kecil.
+			Untuk menginstal docker compose 
+			
+				Bash
+					sudo apt-get update
+					sudo apt-get install docker-compose-plugin
+		
+		2. Bagaimana dikatakan orkestrasinya para container ?
+			Jawabannya dengan mendaftarkan setiap layanan kedalam 1 file YAML, dimana aturan sebelumnya,
+			1 container 1 layanan, maka 100 container, maka 100 layanan yang harus didaftarkan layanannya.
 
-1. Install docker compose		
+				Bash yaml
 
-	Bash
-		sudo apt-get update
-		sudo apt-get install docker-compose-plugin
-	
-2. 	Buat file yaml (yml) dengan nama "docker-compose.yml"
-	step pertama untuk menjalankan container postgres
-	
-	Bash yaml
-
-		services:
-		  db:
-			image: postgres
-			container_name: dcon01-db-postgres
-			environment:
-			  POSTGRES_USER: ai-rootuser
-			  POSTGRES_PASSWORD: ai-rootpass
-			ports:
-			  - "5432:5432"
-			volumes:
-			  - postgres-data:/var/lib/postgresql/data
+					services:
+					  image: postgres
+						
+					service :
+						image: nginx
+					
+					....
+					
+					service :
+						image: image ke-100
 			  
-3. Jalankan docker-compose.yml
+		3. Docker Network
+			Docker networking pada compose akan membuat konektifitas internal secara otomatis antar container,
+			dimana tidak seperti docker versi manual, kita harus menghubungkan secara manual antar container.
+			Contohnya, webserver bisa terhubung ke database dengan nama database, bukan melalui alamat IP yang rumit.		
+		
+		4. Ketika menjalankan docker compose, maka cukup 
+		
+				Bash
+					sudo docker compose up -d	
+		   
+		   *** Maka docker akan menjalankan file YAML yg diconfigurasi dan ditempatkan dalam directory working.
+		   *** Ingat, 1 directory working yang beris 1 file YAML, maka akan dianggap 1 project
+		   
+		   
+======================================================================================================
+==================================	YAML CONFIG PADA DOCKER COMPOSE	==================================
+======================================================================================================
 
-	Bash
-		sudo docker compose up -d
+1. Konsep :
+	YAML ini sekumpulan layanan (service) yang terintegrasi dalam 1 file (*.yml).
+	dan juga mendefinisikan seluruh "proyek" atau "aplikasi" multi-layanan.
 
-	*** kemudian verifikasi container jalan : 
-		sudo docker ps -a
+2. Struktur YAML
+
+	2.1 Version
+		1 file YAML, biasanya membubuhkan versi docker compose yang digunakan dan direkomendasikan
+
+	2.2 Service :
+		Service ini singkatnya 1 container berisi 1 layanan.
+		Misalkan 1 container berisi 1 service database, 1 container berisi 1 service webserver
+	
+		2.3 Struktur Service 		
+			a image
+				Mengunduh repositori image/Dockerhub ( contoh : postgres, nginx, apache, dll )
+			
+			b container_name
+				Memberikan nama container. Jika tidak ditentukan, maka docker compose
+				secara otomatis membuat nama container.
+			
+			c *Custom*
+				database :
+					- enviroment
+						1. Cara umum untuk mengonfigurasi layanan tanpa mengubah image itu sendiri					
+						
+						2. Mendefinisikan variabel lingkungan yang diperlukan oleh image. Seperti :
+						   db-username, db-password, db-name/SID, dll
+						
+				webserver :
+					- ports
+						Melakukan fowarding port[host] ke port[container], 
+						contoh : 8080:80, dimana port 80 dalam container, akan difowarding oleh 
+								 host port 8080 (web), kemudian ditampilkan dalam client (browser)
+						
+					- volume
+						Melakukan fowarding direktori volume[host] ke volume[container]
+						contoh : ./html:/usr/share/nginx/html, dimana volume host [/usr/share/nginx/html], 
+								 akan difowarding oleh volume container [./html], 
+								 misalkan menyimpan index.html
+								 
+					- depend_on
+						Fungsi: Digunakan untuk mengatur urutan start-up layanan. Ini memastikan bahwa sebuah layanan 
+								tidak akan dijalankan sampai layanan yang menjadi dependensinya sudah berhasil berjalan.
+
+						Contoh: Layanan webserver dapat bergantung pada database. 
+								Ini memastikan kontainer database memulai terlebih dahulu, sehingga webserver dapat 
+								terhubung ke database tanpa masalah.				
+
+3. Contoh Penggunaan YAML
+
+	YAML
+	
+	version: '3.8'
+
+	services:
+	  webserver:
+		image: nginx:latest
+		container_name: web_server
+		ports:
+		  - "8080:80"
+		volumes:
+		  - ./html:/usr/share/nginx/html
+		depends_on:
+		  - database	# layanan webserver tidak akan berjalan, selama layanan database terganggu
+
+	  database:
+		image: postgres:13
+		container_name: db_app
+		environment:
+		  POSTGRES_DB: mydb
+		  POSTGRES_USER: user
+		  POSTGRES_PASSWORD: password123
+		  
+======================================================================================================
+============================================	IMAGES CUSTOM	======================================
+======================================================================================================		
